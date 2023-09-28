@@ -105,3 +105,98 @@ mod url_tests {
         assert!(result.is_ok());
     }
 }
+
+#[cfg(test)]
+mod management_tests {
+    use crate::{
+        management::list_files::{ListFiles, Operator, Options, SearchQuery},
+        ImageKit,
+    };
+
+    #[tokio::test]
+    async fn list_files() {
+        let imagekit = ImageKit::from_env().unwrap();
+        let result = imagekit.list_files(Options::default()).await;
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn list_files_raw_query_string() {
+        let imagekit = ImageKit::from_env().unwrap();
+        let query = SearchQuery::raw_query_string("name=\"default-image.jpg\"");
+        let options = Options::new().search_query(query);
+        let result = imagekit.list_files(options).await;
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn list_files_with_name_search() {
+        let imagekit = ImageKit::from_env().unwrap();
+        let query = SearchQuery::name(Operator::EqualTo, "\"default-image.jpg\"");
+        let options = Options::new().search_query(query);
+        let result = imagekit.list_files(options).await;
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn list_files_with_advanced_search() {
+        let imagekit = ImageKit::from_env().unwrap();
+        let query = SearchQuery::size(Operator::GreaterThan, 100)
+            .and(SearchQuery::tags(Operator::In, &["summer-sale"]));
+        let options = Options::new().search_query(query);
+        let result = imagekit.list_files(options).await;
+        assert!(result.is_ok());
+    }
+
+    #[tokio::test]
+    async fn list_files_with_skip_limit() {
+        let imagekit = ImageKit::from_env().unwrap();
+        let options = Options::new().skip(1).limit(3);
+        let result = imagekit.list_files(options).await;
+        assert!(result.is_ok());
+    }
+}
+#[cfg(test)]
+mod search_query_tests {
+    use crate::management::list_files::{Operator, SearchQuery};
+
+    #[test]
+    fn search_name() {
+        let query = SearchQuery::name(Operator::EqualTo, "\"default-image.jpg\"");
+        assert_eq!(query.to_string(), "name = \"default-image.jpg\"");
+    }
+
+    #[test]
+    fn search_size() {
+        let query = SearchQuery::size(Operator::GreaterThan, 200);
+        assert_eq!(query.to_string(), "size > 200");
+    }
+
+    #[test]
+    fn search_size_special() {
+        let query = SearchQuery::size_special(Operator::GreaterThan, "1mb");
+        assert_eq!(query.to_string(), "size > \"1mb\"");
+    }
+
+    #[test]
+    fn search_advanced_and() {
+        let query = SearchQuery::size(Operator::GreaterThan, 100)
+            .and(SearchQuery::tags(Operator::In, &["summer-sale"]));
+        assert_eq!(
+            query.to_string(),
+            "size > 100 and (tags IN [\"summer-sale\"])"
+        );
+    }
+
+    #[test]
+    fn search_advanced_and_or() {
+        let query = SearchQuery::private(true).and(
+            SearchQuery::size(Operator::GreaterThan, 200)
+                .or(SearchQuery::tags(Operator::In, &["summer-sale"])),
+        );
+        assert_eq!(
+            query.to_string(),
+            "private = true and (size > 200 or (tags IN [\"summer-sale\"]))"
+        );
+    }
+}
