@@ -54,6 +54,17 @@ mod tests {
         let detail_result = imagekit.get_file_details(upload_result.file_id).await;
         assert!(detail_result.is_ok());
     }
+
+    #[tokio::test]
+    async fn uploads_to_folder_and_retrieve_information() {
+        let imagekit = ImageKit::from_env().unwrap();
+        let file = File::open("assets/ferris.jpeg").await.unwrap();
+        let upload_file = UploadFile::from(file);
+        let opts = Options::new(upload_file, "ferris").folder("temp");
+        let upload_result = imagekit.upload(opts).await.unwrap();
+        let detail_result = imagekit.get_file_details(upload_result.file_id).await;
+        assert!(detail_result.is_ok());
+    }
 }
 
 #[cfg(test)]

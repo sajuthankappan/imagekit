@@ -49,6 +49,8 @@ pub struct Options {
     /// The filename must only have alphanumeric characters (a-z, A-Z and/or 0-9),
     /// allowed symbols include `.`, `_`, and `-`.
     file_name: String,
+    /// Folder to upload file
+    folder: Option<String>,
 }
 
 impl Options {
@@ -67,6 +69,12 @@ impl Options {
         self.endpoint = endpoint.into();
         self
     }
+
+    /// Sets the folder to use when uploading the file.
+    pub fn folder<T: AsRef<str> + Into<String>>(mut self, folder: T) -> Self {
+        self.folder = Some(folder.into());
+        self
+    }
 }
 
 impl Default for Options {
@@ -75,6 +83,7 @@ impl Default for Options {
             endpoint: UPLOAD_ENDPOINT.to_string(),
             file: UploadFile::Bytes(vec![]),
             file_name: "untitled".to_string(),
+            folder: None,
         }
     }
 }
@@ -112,6 +121,10 @@ impl Upload for ImageKit {
                     .unwrap();
                 form = form.part("file", form_file);
             }
+        }
+
+        if let Some(folder) = opts.folder {
+            form = form.text("folder", folder);
         }
 
         let response = self
