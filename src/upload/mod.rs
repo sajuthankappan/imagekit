@@ -106,7 +106,7 @@ impl Upload for ImageKit {
                 let file_body = Body::wrap_stream(stream);
                 let form_file = Part::stream(file_body)
                     .file_name(opts.file_name)
-                    .mime_str("image/jpeg")?;
+                    .mime_str("application/octet-stream")?;
                 form = form.part("file", form_file);
             }
             UploadFile::Bytes(file_bytes) => {
@@ -116,7 +116,7 @@ impl Upload for ImageKit {
                 let file_body = Body::wrap_stream(stream);
                 let form_file = Part::stream(file_body)
                     .file_name(opts.file_name)
-                    .mime_str("image/jpeg")?;
+                    .mime_str("application/octet-stream")?;
                 form = form.part("file", form_file);
             }
         }
