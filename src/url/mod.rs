@@ -178,7 +178,9 @@ impl Url for ImageKit {
                 let mut generated_url = if let Some(src) = opts.src {
                     format!("{src}?tr={transformed}")
                 } else {
-                    let path = opts.path.expect("path is expected when src is not given");
+                    let Some(path) = opts.path else {
+                        return Err(anyhow::anyhow!("path should be set when src is not given"));
+                    };
                     format!("{url_endpoint}/{path}?tr={transformed}")
                 };
                 if !query_parameters_str.is_empty() {

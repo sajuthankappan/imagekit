@@ -22,12 +22,12 @@ impl Details for ImageKit {
             .await?;
 
         if matches!(response.status(), StatusCode::OK) {
-            let result = response.json::<Response>().await.unwrap();
+            let result = response.json::<Response>().await?;
 
             return Ok(result);
         }
 
-        let result = response.json::<ErrorResponse>().await.unwrap();
+        let result = response.json::<ErrorResponse>().await?;
 
         bail!(result.message);
     }

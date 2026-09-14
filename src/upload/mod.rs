@@ -106,8 +106,7 @@ impl Upload for ImageKit {
                 let file_body = Body::wrap_stream(stream);
                 let form_file = Part::stream(file_body)
                     .file_name(opts.file_name)
-                    .mime_str("image/jpeg")
-                    .unwrap();
+                    .mime_str("image/jpeg")?;
                 form = form.part("file", form_file);
             }
             UploadFile::Bytes(file_bytes) => {
@@ -117,8 +116,7 @@ impl Upload for ImageKit {
                 let file_body = Body::wrap_stream(stream);
                 let form_file = Part::stream(file_body)
                     .file_name(opts.file_name)
-                    .mime_str("image/jpeg")
-                    .unwrap();
+                    .mime_str("image/jpeg")?;
                 form = form.part("file", form_file);
             }
         }
@@ -132,16 +130,15 @@ impl Upload for ImageKit {
             .post(opts.endpoint)
             .multipart(form)
             .send()
-            .await
-            .unwrap();
+            .await?;
 
         if matches!(response.status(), StatusCode::OK) {
-            let result = response.json::<Response>().await.unwrap();
+            let result = response.json::<Response>().await?;
 
             return Ok(result);
         }
 
-        let result = response.json::<ErrorResponse>().await.unwrap();
+        let result = response.json::<ErrorResponse>().await?;
 
         bail!(result.message);
     }
